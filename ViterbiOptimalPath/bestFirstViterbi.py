@@ -1,6 +1,24 @@
 from pqdict import PQDict
 import numpy as np 
 from collections import defaultdict 
+<<<<<<< HEAD
+import logging
+
+
+
+def mint_bound(G, start, y):
+    '''
+   
+    Mint-bound algorithm
+    Input: 
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    
+    Returns: 
+    d: optimal costs (dict)
+    P[k] + [k]: path (list)
+=======
 import copy 
 import logging
 import time 
@@ -34,6 +52,7 @@ def dijkstra_bound(G, start, y):
     `pred` is a dict mapping each node to its predecessor node on the
     shortest path from the specified starting node:
         assert pred == {'b': 'a', 'c': 'b', 'd': 'c'}
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     
     '''
     
@@ -45,15 +64,29 @@ def dijkstra_bound(G, start, y):
     visited = set() 
     success=False
     
+<<<<<<< HEAD
+    while Q:                                 
+        (k, d) = Q.popitem()                 # pop node w min dist d on frontier in constant time 
+=======
     
     while Q:                                 # nodes yet to explore
         (k, d) = Q.popitem()                 # pop node w min dist d on frontier in constant time 
         D[k]= d                              # est dijkstra greedy score
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         visited.add(k)  
 
         # remove from unexplored
         if k[1] == T-1: 
             success=True 
+<<<<<<< HEAD
+            break                 
+     
+        for w in G.adj[k[0]]:                          
+            if ( w, k[1]+1 ) not in visited:                       
+                d = D[k] + G.upper_bound - G.adj[k[0]][w]  - G.emission_probabilities[ w ][ y[k[1]+1] ]       
+                if d < Q.get((w,k[1]+1), float("inf")):
+                    Q[(w, k[1]+1)] = d               
+=======
             break                  # if the frame k[1] is T we arrived to the end 
 
         # now consider the edges from v with an unexplored head -
@@ -66,21 +99,45 @@ def dijkstra_bound(G, start, y):
                     Q[(w, k[1]+1)] = d               # set/update dgs
                    # history = copy.deepcopy(P[k])
                    # history.append(k)
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                     P[(w, k[1]+1)] = P[k] + [k]  
                  
     if not success:
         logging.warning('Algorithm terminated before last frame was reached.')
     
+<<<<<<< HEAD
+    return D, d
+=======
     r =  len(visited) /  (len(G.nodes) * len(y))
     
     #    history = P[k]
     #    history.append(k)
     
     return D,  P[k] + [k] , r
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
 
 
 
 
+<<<<<<< HEAD
+def mint(G, start, y):
+    '''
+    Mint algorithm
+    Input: 
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    
+    Returns: 
+    d: optimal costs (dict)
+    P[k] + [k]: path (list)
+    
+    '''
+    D = defaultdict(float) 
+    D[(start, 0)] = - G.emission_probabilities[ start ][ y[0] ]         
+    Q = PQDict(D)           
+    P = defaultdict(list)              
+=======
 def dijkstra(G, start, y):
     
     
@@ -112,10 +169,25 @@ def dijkstra(G, start, y):
     Q = PQDict(D)           # priority queue for tracking min shortest path
     P = defaultdict(list)                # mapping of nodes to their direct predecessors
     #to_visit = set(  zip( G.adj.keys() , [0 for _ in range(len(G.adj.keys()))]  ) )       # unexplored node
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     visited = set() 
     success=False
     T = len(y) 
         
+<<<<<<< HEAD
+    
+    while Q:             
+                                          
+        (k, d) = Q.popitem()
+    
+        if k[1] == T-1: 
+            success=True 
+            break               
+
+        visited.add(k) 
+
+        for w in G.adj[k[0]]:                         
+=======
    # dict_paths = defaultdict(list) 
     
     while Q:             
@@ -134,17 +206,28 @@ def dijkstra(G, start, y):
         # now consider the edges from v with an unexplored head -
         # we may need to update the dist of unexplored successors 
         for w in G.adj[k[0]]:                          # successors to v
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         
             if ( w , k[1]+1 ) not in visited:        
 
                 # then w is a frontier node
+<<<<<<< HEAD
+                new_d = d - G.adj[k[0]][w]  - G.emission_probabilities[ w ][ y[k[1]+1] ]   
+                if new_d < Q.get((w,k[1]+1), float("inf")):
+                    Q[(w, k[1]+1)] = new_d   
+=======
                 d = D[k] - G.adj[k[0]][w]  - G.emission_probabilities[ w ][ y[k[1]+1] ]      # dgs: dist of start -> v -> w
                 if d < Q.get((w,k[1]+1), float("inf")):
                     Q[(w, k[1]+1)] = d     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                     P[(w, k[1]+1)] = P[k] + [k] 
         
     if not success:
         logging.warning('Algorithm terminated before last frame was reached.')
+<<<<<<< HEAD
+
+    return d , P[k] + [k]
+=======
     
     r =  len(visited) / (len(G.nodes) * len(y))
 
@@ -969,17 +1052,29 @@ def dfs( G, pred, state, frame, cost, Q_by_state,  Q, map_state2t,  y, visited, 
     
     
 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
 
 
 
 def viterbi(G, start, y):
     """
+<<<<<<< HEAD
+    Viterbi algorithm - pull implementation
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    
+    Returns: 
+    x: optimal paths (dict)
+    T1; path probability table (array) 
+=======
     Return the MAP estimate of state trajectory of Hidden Markov Model.
 
     Parameters
     
     Returns
     -------
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
 
     """
     
@@ -996,7 +1091,10 @@ def viterbi(G, start, y):
     T1[:, 0] = Pi +  G.emission_probabilities[:, y[0]] 
     T2[:, 0] = 0
     
+<<<<<<< HEAD
+=======
     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     # Iterate throught the observations updating the tracking tables
     for j in range(1, T): 
                 
@@ -1006,7 +1104,10 @@ def viterbi(G, start, y):
             best_neig = float("-inf")  
             for neig in G.adj_inv[i]: 
                 this_likelihood = T1[neig , j - 1]  + G.adj_inv[i][neig] + G.emission_probabilities[i][y[j]] 
+<<<<<<< HEAD
+=======
                 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if this_likelihood > i_max: 
                     i_max = this_likelihood
                     best_neig = neig 
@@ -1016,11 +1117,16 @@ def viterbi(G, start, y):
                           
     # Build the output, optimal model trajectory by Backtracking 
     x = np.zeros(T, dtype=int)
+<<<<<<< HEAD
+    x[-1] = int(np.argmax(T1[:, T - 1]))
+    for i in reversed(range(1, T)):
+=======
     
     x[-1] = int(np.argmax(T1[:, T - 1]))
 
     for i in reversed(range(1, T)):
       
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         x[i - 1] = T2[x[i], i]
     
     return x, T1
@@ -1029,6 +1135,16 @@ def viterbi(G, start, y):
 
 def viterbi_tp(G, start, y):
     """
+<<<<<<< HEAD
+    Viterbi algorithm - push (token-passing-like) implementation
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    
+    Returns: 
+    x: optimal paths (dict)
+    T1; path probability table (array) 
+=======
     Return the MAP estimate of state trajectory of Hidden Markov Model.
 
     Parameters
@@ -1036,6 +1152,7 @@ def viterbi_tp(G, start, y):
     Returns
     -------
 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     """
     
     
@@ -1049,8 +1166,12 @@ def viterbi_tp(G, start, y):
     Pi = np.array([float("-inf") if it!=start else 0 for it in G.nodes])
     
     T1[:, 0] = Pi +  G.emission_probabilities[:, y[0]] 
+<<<<<<< HEAD
+    T2[:, 0] = 0    
+=======
     T2[:, 0] = 0
     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     
     # Iterate through the observations updating the tracking tables
     for j in range(1, T): 
@@ -1059,31 +1180,78 @@ def viterbi_tp(G, start, y):
         this_j_T2 = [float("-inf")  for _ in range(K)] 
         
         for i in range(K): 
+<<<<<<< HEAD
+            for neig in G.adj[i]: 
+                this_likelihood = T1[i , j - 1]  + G.adj[i][neig] + G.emission_probabilities[neig][y[j]] 
+=======
             
             
             for neig in G.adj[i]: 
                 this_likelihood = T1[i , j - 1]  + G.adj[i][neig] + G.emission_probabilities[neig][y[j]] 
                 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if this_likelihood > this_j_T1[neig]: 
                     this_j_T1[neig] = this_likelihood
                     this_j_T2[neig] = i  
             
+<<<<<<< HEAD
+=======
             
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         T1[:,j] = this_j_T1
         T2[:,j] = this_j_T2
                       
     # Build the output, optimal model trajectory by Backtracking 
     x = np.zeros(T, dtype=int)
+<<<<<<< HEAD
+    x[-1] = int(np.argmax(T1[:, T - 1]))
+    for i in reversed(range(1, T)):
+=======
     
     x[-1] = int(np.argmax(T1[:, T - 1]))
     
     for i in reversed(range(1, T)):
       
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         x[i - 1] = T2[x[i], i]
     
     return x, T1
 
 
+<<<<<<< HEAD
+def bidirectional_mint(G, start, y, last_nodes):
+    '''
+    bidirectional-mint algorithm
+    Input: 
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    last_nodes: possible last states (e.g., set of nodes reachable in T steps) 
+    
+    Returns: 
+    best path: path (list)
+    '''
+    
+    D_f = defaultdict(float) 
+    D_b = defaultdict(float) 
+    T = len(y) 
+    D_f[(start, 0)] = - G.emission_probabilities[ start ][ y[0] ] 
+    for node in last_nodes:
+        D_b[(node, T-1)] = 0 
+    Q_f = PQDict(D_f)          
+    Q_b = PQDict(D_b)
+    P_f = defaultdict(list)               
+    P_b = defaultdict(list)  
+
+    visited_f = set()      
+    visited_b = set() 
+    mu = float("inf") 
+        
+    while len(Q_f)>0 and len(Q_b)>0:     
+        
+        (k_f, d_f) = Q_f.popitem() 
+        (k_b, d_b) = Q_b.popitem()                   
+=======
 
 
 def bidirectional_dijkstra(G, start, y, last_nodes):
@@ -1151,10 +1319,32 @@ def bidirectional_dijkstra(G, start, y, last_nodes):
                         #           # nodes yet to explore
         (k_f, d_f) = Q_f.popitem() 
         (k_b, d_b) = Q_b.popitem()                    # pop node w min dist d on frontier in constant time 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         D_f[k_f]=  d_f 
         D_b[k_b] = d_b      
         # update explored 
         visited_f.add(k_f)
+<<<<<<< HEAD
+        visited_b.add(k_b)   
+
+        if k_f[1] < T-1: 
+            for w in G.adj[k_f[0]]:                          
+                if ( w , k_f[1]+1 ) not in visited_f:        
+                    d = D_f[k_f] - G.adj[k_f[0]][w]  - G.emission_probabilities[ w ][ y[k_f[1]+1] ]    
+                    if d < Q_f.get((w,k_f[1]+1), float("inf")):
+                        Q_f[(w, k_f[1]+1)] = d     
+                        P_f[(w, k_f[1]+1)] = P_f[k_f] + [k_f] 
+                                        
+                
+                if ( w , k_f[1]+1 ) in visited_b and D_f[k_f] - G.adj[k_f[0]][w]  + D_b[( w , k_f[1]+1 )] - G.emission_probabilities[ w ][ y[k_f[1]+1] ] < mu and len(P_f[k_f]) + len(P_b[( w , k_f[1]+1 )]) == T-2:
+                   
+                    mu = D_f[k_f] - G.adj[k_f[0]][w]  + D_b[( w , k_f[1]+1 )]  - G.emission_probabilities[ w ][ y[k_f[1]+1] ]
+                    best_path = P_f[k_f] + [(k_f[0], k_f[1]), (w, k_f[1]+1)] + P_b[( w , k_f[1]+1 )][::-1]
+                   
+            
+        if k_b[1] > 0: 
+            for w in G.adj_inv[k_b[0]]:  
+=======
         visited_b.add(k_b)        
         
         #print("visiting in forward search " + str(k_f) + " of cost " + str(D_f[k_f])) 
@@ -1305,11 +1495,28 @@ def bidirectional_dijkstra2(G, start, y, last_nodes):
             
         if k_b[1] > 0: 
             for w in G.adj_inv[k_b[0]]:  # successors to v
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if ( w , k_b[1] - 1 ) not in visited_b: 
                     
                     d = D_b[k_b] - G.adj_inv[k_b[0]][w]  - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ]      # here we add the emission probability of the source and not of the destination 
                     if d < Q_b.get((w,k_b[1]-1), float("inf")):
                         Q_b[(w, k_b[1]-1)] = d                             
+<<<<<<< HEAD
+                        P_b[(w, k_b[1]-1)] = P_b[k_b] + [k_b]   
+                       
+                                       
+                if ( w, k_b[1]-1 ) in visited_f and D_b[k_b] - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] - G.adj_inv[k_b[0]][w]  + D_f[(w, k_b[1]-1)] < mu and len(P_f[(w, k_b[1]-1)]) + len(P_b[k_b]) == T - 2:                                        
+                    mu = D_b[k_b]  - G.adj_inv[k_b[0]][w]  - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] + D_f[(w, k_b[1]-1)] # new best path 
+                    best_path = P_f[(w, k_b[1]-1)] +  [(w, k_b[1]-1), (k_b[0], k_b[1])] +  P_b[k_b][::-1] 
+                   
+        # check stopping condition 
+        if D_f[k_f] + D_b[k_b] >= mu : 
+            print("Breaking!")
+            break 
+                 
+    
+    return  best_path
+=======
                        # history = copy.deepcopy(P_b[k_b])
                        # history.append(k_b)
                         P_b[(w, k_b[1]-1)] = P_b[k_b] + [k_b]   
@@ -1331,6 +1538,7 @@ def bidirectional_dijkstra2(G, start, y, last_nodes):
     
     return  best_path , r
 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
 
 
 
@@ -1339,6 +1547,17 @@ def bidirectional_dijkstra2(G, start, y, last_nodes):
 
 def bidirectional_dijkstra_bound(G, start, y, last_nodes):
     '''
+<<<<<<< HEAD
+    bidirectional-mint-bound
+    Input: 
+    G: graph  (graph)
+    start: start node (int, str) 
+    y: observation sequence (array) 
+    last_nodes: possible last states (e.g., set of nodes reachable in T steps) 
+    
+    Returns: 
+    best path: path (list)
+=======
     dijkstra's algorithm determines the length from `start` to every other 
     vertex in the graph.
     The graph argument `G` should be a dict indexed by nodes.  The value 
@@ -1359,11 +1578,27 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
     `pred` is a dict mapping each node to its predecessor node on the
     shortest path from the specified starting node:
         assert pred == {'b': 'a', 'c': 'b', 'd': 'c'}
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     '''
     
     D_f = defaultdict(float) 
     D_b = defaultdict(float) 
     T = len(y) 
+<<<<<<< HEAD
+    D_f[(start, 0)] =  -G.upper_bound * T 
+    for node in last_nodes:
+        D_b[(node, T-1)] = -G.upper_bound_reversed * T 
+    Q_f = PQDict(D_f)          
+    Q_b = PQDict(D_b)
+    P_f = defaultdict(list)    
+    P_b = defaultdict(list)  
+    visited_f = set()      
+    visited_b = set() 
+    mu = float("inf")       
+    while len(Q_f)>0 and len(Q_b)>0:     
+        (k_f, d_f) = Q_f.popitem() 
+        (k_b, d_b) = Q_b.popitem()                   
+=======
     D_f[(start, 0)] =  -G.upper_bound * T # - G.emission_probabilities[ start ][ y[0] ] # mapping of nodes to their dist from start
     for node in last_nodes:
         D_b[(node, T-1)] = -G.upper_bound_reversed * T 
@@ -1386,10 +1621,20 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
         #print("current backward visited " + str(visited_b))
         (k_f, d_f) = Q_f.popitem() 
         (k_b, d_b) = Q_b.popitem()                    # pop node w min dist d on frontier in constant time 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         D_f[k_f]=  d_f 
         D_b[k_b] = d_b      
         # update explored 
         visited_f.add(k_f)
+<<<<<<< HEAD
+        visited_b.add(k_b)        
+        if k_f[1] < T-1: 
+            for w in G.adj[k_f[0]]:                          
+                if ( w , k_f[1]+1 ) not in visited_f:        
+                    d = D_f[k_f] + G.upper_bound - G.adj[k_f[0]][w]  - G.emission_probabilities[ w ][ y[k_f[1]+1] ]     
+                    if d < Q_f.get((w,k_f[1]+1), float("inf")):
+                        Q_f[(w, k_f[1]+1)] = d     
+=======
         visited_b.add(k_b)   
         #print("visiting in forward search " + str(k_f) + " of cost " + str(D_f[k_f])) 
         #print("visiting in backward search " + str(k_b) + " of cost " + str(D_b[k_b]))              
@@ -1401,6 +1646,7 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
                         Q_f[(w, k_f[1]+1)] = d     
                   #      history = copy.deepcopy(P_f[k_f])
                   #      history.append(k_f)
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                         P_f[(w, k_f[1]+1)] = P_f[k_f] + [k_f]  
                                         
                 
@@ -1412,20 +1658,43 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
                     
             
         if k_b[1] > 0: 
+<<<<<<< HEAD
+            for w in G.adj_inv[k_b[0]]:  
+=======
             for w in G.adj_inv[k_b[0]]:  # successors to v
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if ( w , k_b[1] - 1 ) not in visited_b: 
                     
                     d = D_b[k_b] + G.upper_bound - G.adj_inv[k_b[0]][w] - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ]      # here we add the emission probability of the source and not of the destination 
                     if d < Q_b.get((w,k_b[1]-1), float("inf")):
                         Q_b[(w, k_b[1]-1)] = d                             
+<<<<<<< HEAD
+=======
                        # history = copy.deepcopy(P_b[k_b])
                        # history.append(k_b)
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                         P_b[(w, k_b[1]-1)] = P_b[k_b] + [k_b]   
                                      
                 actual_cost_forward = D_f[(w, k_b[1]-1)] + (T - 1 - k_b[1] + 1) * G.upper_bound
                 actual_cost_backward = D_b[k_b] + (T - 1 - k_b[1]) * G.upper_bound
                 if ( w, k_b[1]-1 ) in visited_f and actual_cost_backward - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] - G.adj_inv[k_b[0]][w]  + actual_cost_forward < mu and len(P_f[(w, k_b[1]-1)]) + len(P_b[k_b]) == T - 2:                                        
                     mu = actual_cost_backward - G.adj_inv[k_b[0]][w]  - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] + actual_cost_forward
+<<<<<<< HEAD
+                    best_path = P_f[(w, k_b[1]-1)] +  [(w, k_b[1]-1), (k_b[0], k_b[1])] +  P_b[k_b][::-1] 
+
+                    
+        # check stopping condition 
+        if D_f[k_f] + D_b[k_b] >= mu :
+            print("Breaking!")
+            break 
+                 
+
+    
+    return  best_path 
+
+
+
+=======
                     best_path = P_f[(w, k_b[1]-1)] +  [(w, k_b[1]-1), (k_b[0], k_b[1])] +  P_b[k_b][::-1] #P_f[(w, t_forw)] + [ (w,k_b[1]-1) , (k_b[0], k_b[1]) ] + P_b[k_b][::-1]
 
                     
@@ -1630,4 +1899,5 @@ def make_graph(nodes, edges):
         G.add_edge(edge[0], edge[1], edge[2]) 
                 
     return G 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     

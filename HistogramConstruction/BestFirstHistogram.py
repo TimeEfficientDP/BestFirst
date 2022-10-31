@@ -3,15 +3,27 @@ import numpy as np
 from collections import defaultdict 
 import copy 
 import logging
-import time 
+<<<<<<< HEAD
 import heapq
 from math import ceil , floor 
 from graph import Graph
-### TODO : implement prruning of the priority queue 
 
 
 
-def V_optimal_histogram(sequence, B):
+
+def V_optimal_histogram(sequence, B: int):
+    
+    ''' 
+    V-optimal histogram DP algorithm 
+    Parameters: 
+        sequence: data (list) 
+        B: number of buckets (int)
+        
+    Returns: 
+        terr: optimal errors (array)
+    
+    ''' 
+    
     
     n = len(sequence) 
     sums = np.zeros(n)
@@ -35,11 +47,30 @@ def V_optimal_histogram(sequence, B):
                 terr[j,k] = min( terr[j,k] ,  terr[i, k-1]  + squared_error  )
                 
                 
+<<<<<<< HEAD
+    return terr 
+
+
+
+def tech(sequence, B:int):
+    ''' 
+    tech algorithm 
+    Parameters: 
+        sequence: data (list) 
+        B: number of buckets (int)
+        
+    Returns: 
+        D: optimal errors (dict)
+    
+    ''' 
+   
+=======
     return terr #terr[n-1, B-1] 
 
 
 
 def V_optimal_histogram_dijkstra(sequence, B):
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     
     D = defaultdict(dict) 
     D[(0, 0)] = 0 
@@ -49,9 +80,13 @@ def V_optimal_histogram_dijkstra(sequence, B):
     sums = np.zeros(n)
     squared_sums = np.zeros(n) 
     sums[0] = sequence[0]
+<<<<<<< HEAD
+    squared_sums[0]= sequence[0]**2     
+=======
     squared_sums[0]= sequence[0]**2 
     #success = False
     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     
     for i in range(1,n): 
         sums[i] = sums[i-1] + sequence[i] 
@@ -61,10 +96,15 @@ def V_optimal_histogram_dijkstra(sequence, B):
     start = 0 
     for j in range(1,n-(B-1)+1):        
         Q[(j,0)] = (squared_sums[j] -   squared_sums[start]) - (sums[j]  - sums[start] )**2 / (j - start + 1)
+<<<<<<< HEAD
+    
+    while Q: 
+=======
       #(squared_sums[j] -   squared_sums[start]) - (sums[j]  - sums[start] )**2 / (j - start + 1) # start enquining the zero split 
     
     while Q: 
         #
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
         (key, d) = Q.popitem() 
         D[key]= d
         visited.add(key)  
@@ -73,14 +113,36 @@ def V_optimal_histogram_dijkstra(sequence, B):
             break                
         
         if key[1] < B-1:
+<<<<<<< HEAD
+            for neig in range(key[0]+1, n-(B-1-key[1])+1): 
+=======
             
             for neig in range(key[0]+1, n-(B-1-key[1])+1): 
             #for neig in range(key[0]+1, n): 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if (neig,key[1]+1) not in visited:
                     new_d = d + (squared_sums[neig] - squared_sums[key[0]]) - (sums[neig] - sums[key[0]])**2  / (neig - key[0]  + 1)
                     if new_d < Q.get((neig,key[1]+1), float("inf")):
                         Q[(neig, key[1]+1)] = new_d 
         
+<<<<<<< HEAD
+    return D
+
+
+
+def tech_bound(sequence, B, LB):
+    ''' 
+    tech bound algorithm 
+    Parameters: 
+        sequence: data (list) 
+        B: number of buckets (int)
+        
+    Returns: 
+        D: optimal errors (dict)
+    ''' 
+    
+    D = defaultdict(dict) 
+=======
     return D #D[key]
 
 
@@ -152,6 +214,7 @@ def V_optimal_histogram_dijkstra_bound(sequence, B, LB):
     
     D = defaultdict(dict) 
     #D_actual_costs = defaultdict(dict) 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     D[(0, 0)] = LB[1,B]# (state, frame) - cost 
     Q = PQDict(D)    
     visited = set() 
@@ -191,16 +254,24 @@ def V_optimal_histogram_dijkstra_bound(sequence, B, LB):
                     if new_d < Q.get((neig,key[1]+1), float("inf")):
                         Q[(neig, key[1]+1)] = new_d 
                
+<<<<<<< HEAD
+               
+=======
                    # if D_actual_costs[key] + squared_error  < D_actual_costs.get((neig,key[1]+1), float("inf")): 
                    #     D_actual_costs[(neig,key[1]+1)] = D_actual_costs[key] + squared_error
 
     #if not success:
     #    logging.warning('Algorithm terminated before last frame was reached.')
         
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     return D[n-1, B-1]
 
 
 
+<<<<<<< HEAD
+
+
+=======
 def compute_bounds(sequence, B): 
     
     n = len(sequence)
@@ -366,6 +437,7 @@ def compute_bounds_reversed(sequence, B):
             
    
     return LB_reversed 
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
 
 
 
@@ -375,6 +447,104 @@ def compute_bounds_reversed(sequence, B):
 
 
 
+<<<<<<< HEAD
+
+def bidirectional_tech(sequence, B):
+   ''' 
+   bidirectional tech algorithm 
+   Parameters: 
+       sequence: data (list) 
+       B: number of buckets (int)
+        
+   Returns: 
+       mu: optimal error 
+   ''' 
+
+   D_f = defaultdict(float) 
+   D_b = defaultdict(float) 
+   squared_error = dict() 
+   n = len(sequence) 
+   D_f[(0, 0)] = 0  
+   D_b[(n-1, 0)] = 0 
+   Q_f = PQDict(D_f)    
+   Q_b = PQDict(D_b) 
+   visited_b = set() 
+   visited_f = set() 
+   sums = np.zeros(n)
+   squared_sums = np.zeros(n) 
+   sums[0] = sequence[0]
+   squared_sums[0]= sequence[0]**2 
+      
+   start = 0 
+   for j in range(1, n-(B-1)+1): 
+       sse = (squared_sums[j] - squared_sums[start]) - (sums[j]  - sums[start] )**2 / (j - start + 1)
+       Q_f[(j,0)] = sse # start enquining the zero split 
+       squared_error[(start,j)] = sse
+       
+   end = n-1
+   for j in reversed(range(B-1, n-1)): 
+      sse = (squared_sums[end] - squared_sums[j]) - ( sums[end] - sums[j]  )**2  / (end - j + 1)
+      Q_b[(j,0)] = sse      
+      squared_error[(j,end)] = sse
+      
+   mu = float("inf") 
+   while len(Q_f)>0 and len(Q_b)>0:
+       
+       (k_f, d_f) = Q_f.popitem() 
+       (k_b, d_b) = Q_b.popitem()                    # pop node w min dist d on frontier in constant time 
+       D_f[k_f]=  d_f 
+       D_b[k_b] = d_b      
+       # update explored 
+       visited_f.add(k_f)
+       visited_b.add(k_b)       
+       
+       if k_f[1] < B-1:
+           for neig in range(k_f[0]+1,  n-(B-1-k_f[1])+1): 
+               
+               if (neig, k_f[1]+1) not in visited_f:
+                   if (k_f[0], neig) not in squared_error:
+                       squared_error[(k_f[0], neig)] = (squared_sums[neig] - squared_sums[k_f[0]]) - (sums[neig] - sums[k_f[0]])**2  / (neig - k_f[0] + 1)
+                   new_d = d_f + squared_error[(k_f[0], neig)] 
+                   if new_d < Q_f.get((neig,k_f[1]+1), float("inf")):
+                       Q_f[(neig, k_f[1]+1)] = new_d 
+   
+               if (neig , B - k_f[1]  - 2) in visited_b and D_f[k_f] + squared_error[(k_f[0], neig)] + D_b[( neig , B - k_f[1]  - 2 )] < mu:
+                   mu = D_f[k_f] + squared_error[(k_f[0], neig)] + D_b[( neig , B - k_f[1]  - 2 )]
+   
+       if k_b[1] < B-1:
+           for neig_back in reversed(range(B-1-k_b[1], k_b[0])): 
+               
+               if ( neig_back, k_b[1] + 1) not in visited_b:
+                   if (neig_back, k_b[0]) not in squared_error:
+                       squared_error[(neig_back, k_b[0])] = (squared_sums[k_b[0]] - squared_sums[neig_back]) - (sums[k_b[0]] - sums[neig_back])**2  / (k_b[0] - neig_back +1)
+                   new_d = d_b + squared_error[(neig_back, k_b[0])]  
+                   if new_d < Q_b.get((neig_back , k_b[1]+1), float("inf")):
+                       Q_b[(neig_back, k_b[1]+1)] = new_d 
+                   
+               if (neig_back , B - k_b[1] - 2) in visited_f and D_b[k_b] + squared_error[(neig_back, k_b[0])] + D_f[( neig_back ,  B - k_b[1] - 2)] < mu :                                        
+                   mu = D_b[k_b] + squared_error[(neig_back, k_b[0])]  + D_f[( neig_back ,  B - k_b[1] - 2 )]
+
+       # check stopping condition 
+       if D_f[k_f] + D_b[k_b] >= mu :
+           break 
+   
+   return mu
+
+
+
+
+def b_directional_tech_bound(sequence, B, LB, LB_reversed):
+    ''' 
+    bidirectional tech bound algorithm 
+    Parameters: 
+        sequence: data (list) 
+        B: number of buckets (int)
+         
+    Returns: 
+        mu: optimal error 
+    ''' 
+
+=======
 def V_optimal_histogram_dijkstra_bound_old(sequence, B, LB):
     
     D = defaultdict(dict) 
@@ -517,6 +687,7 @@ def V_optimal_histogram_dijkstra_bidirectional(sequence, B):
 
 def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reversed):
     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     
     D_f = defaultdict(float) 
     D_b = defaultdict(float) 
@@ -530,6 +701,15 @@ def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reverse
     visited_f = set() 
     sums = np.zeros(n)
     squared_sums = np.zeros(n) 
+<<<<<<< HEAD
+    sums[0] = sequence[0]
+    squared_sums[0]= sequence[0]**2 
+    
+    for i in range(1,n): 
+        sums[i] = sums[i-1] + sequence[i] 
+        squared_sums[i] = squared_sums[i-1] + sequence[i]**2
+    
+=======
     #sums_reversed = np.zeros(n)
     #squared_sums_reversed = np.zeros(n) 
     sums[0] = sequence[0]
@@ -544,6 +724,7 @@ def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reverse
     #    sums_reversed[i] = sums_reversed[i+1] + sequence[i] 
     #    squared_sums_reversed[i] = squared_sums_reversed[i+1] + sequence[i]**2     
     # sum computed, now starting enquing fromt the start and from the end     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
     start = 0 
     for j in range(1, n-(B-1)+1): 
         sse = (squared_sums[j] - squared_sums[start]) - (sums[j]  - sums[start] )**2 / (j - start + 1) 
@@ -553,7 +734,11 @@ def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reverse
     end = n-1
     for j in reversed(range(B-1, n-1)): 
        sse = (squared_sums[end] - squared_sums[j]) - ( sums[end] - sums[j]  )**2  / (end - j + 1)
+<<<<<<< HEAD
+       Q_b[(j,0)] = sse  + LB_reversed[j-1,B]        
+=======
        Q_b[(j,0)] = sse  + LB_reversed[j-1,B]  # now its correct we dont use reversed sums also in the backward case         
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
        squared_error[(j,end)] = sse
        
     mu = float("inf") 
@@ -577,7 +762,10 @@ def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reverse
                     if new_d < Q_f.get((neig,k_f[1]+1), float("inf")):
                         Q_f[(neig, k_f[1]+1)] = new_d 
     
+<<<<<<< HEAD
+=======
                 #if ( k_f[0] , B - k_f[1]  - 1 ) in visited_b and D_f[k_f] + D_b[( k_f[0] , B - k_f[1]  - 1 )] < mu :
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
                 if (neig , B - k_f[1]  - 2) in visited_b and D_f[k_f] - LB[ k_f[0]+1, B - k_f[1]]  + squared_error[(k_f[0], neig)] + D_b[( neig , B - k_f[1]  - 2 )] - LB_reversed[ neig-1 , k_f[1]  + 2] < mu:
                     mu = D_f[k_f] - LB[ k_f[0]+1, B - k_f[1]]  + squared_error[(k_f[0], neig)] + D_b[( neig , B - k_f[1]  - 2 )] - LB_reversed[ neig-1 , k_f[1]  + 2]
     
@@ -591,6 +779,16 @@ def V_optimal_histogram_dijkstra_bidirectional_bound(sequence, B, LB, LB_reverse
                     if new_d < Q_b.get((neig_back , k_b[1]+1), float("inf")):
                         Q_b[(neig_back, k_b[1]+1)] = new_d 
                     
+<<<<<<< HEAD
+                if (neig_back , B - k_b[1] - 2) in visited_f and D_b[k_b]  - LB_reversed[ k_b[0]-1, B - k_b[1]]  + squared_error[(neig_back, k_b[0])] + D_f[( neig_back ,  B - k_b[1] - 2)] - LB[neig_back+1 , k_b[1] + 2 ]  < mu :                                        
+                    mu = D_b[k_b]  - LB_reversed[ k_b[0]-1, B - k_b[1]]  + squared_error[(neig_back, k_b[0])] + D_f[( neig_back ,  B - k_b[1] - 2)] - LB[neig_back+1 , k_b[1] + 2 ]
+
+        # check stopping condition 
+        if D_f[k_f] + D_b[k_b] >= mu :
+            break 
+    
+    return mu
+=======
                 #squared_error = (squared_sums[k_b[0]] - squared_sums[neig_back]) - (sums[k_b[0]] - sums[neig_back])**2  / (k_b[0] - neig_back + 1)
                 if (neig_back , B - k_b[1] - 2) in visited_f and D_b[k_b]  - LB_reversed[ k_b[0]-1, B - k_b[1]]  + squared_error[(neig_back, k_b[0])] + D_f[( neig_back ,  B - k_b[1] - 2)] - LB[neig_back+1 , k_b[1] + 2 ]  < mu :                                        
                     mu = D_b[k_b]  - LB_reversed[ k_b[0]-1, B - k_b[1]]  + squared_error[(neig_back, k_b[0])] + D_f[( neig_back ,  B - k_b[1] - 2)] - LB[neig_back+1 , k_b[1] + 2 ]
@@ -2424,3 +2622,4 @@ def make_graph(nodes, edges):
                 
     return G 
     
+>>>>>>> 153cb145f02d8e319d061cc3839923d57d7f34ce
