@@ -197,6 +197,7 @@ def bidirectional_mint(G, start, y, last_nodes):
     
     Returns: 
         best path: path (list)
+        mu: best path cost (float)
     '''
     
     D_f = defaultdict(float) 
@@ -253,11 +254,11 @@ def bidirectional_mint(G, start, y, last_nodes):
             print("Breaking!")
             break 
                      
-    return  best_path 
+    return  best_path , mu 
 
 
 
-def bidirectional_dijkstra_bound(G, start, y, last_nodes):
+def bidirectional_tech_bound(G, start, y, last_nodes):
    '''
    bidirectional-mint-bound
    Parameters: 
@@ -268,6 +269,7 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
     
     Returns: 
         best path: path (list)
+        mu: best path cost (float)
     '''
     
    D_f = defaultdict(float) 
@@ -327,4 +329,4 @@ def bidirectional_dijkstra_bound(G, start, y, last_nodes):
            print("Breaking!")
            break 
                 
-   return  best_path 
+   return  best_path , mu
