@@ -221,11 +221,7 @@ def bidirectional_tech(sequence, B):
            break 
    
    return mu
-  
-
-
-   return mu
-
+ 
 
 
 def bidirectional_tech_bound(sequence, B, LB, LB_reversed):
