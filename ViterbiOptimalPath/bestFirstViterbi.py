@@ -90,7 +90,6 @@ def mint_bound(G, start, y):
 
 
 
-
 def viterbi(G, start, y):
     """
     Viterbi algorithm - pull implementation
@@ -187,9 +186,6 @@ def viterbi_tp(G, start, y):
     
     
     
-    
-    
-
 def bidirectional_mint(G, start, y, last_nodes):
     '''
     bidirectional-mint algorithm
@@ -258,13 +254,6 @@ def bidirectional_mint(G, start, y, last_nodes):
             break 
                      
     return  best_path 
-
-
-
-
-
-
-
 
 
 
