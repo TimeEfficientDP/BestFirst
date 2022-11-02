@@ -42,9 +42,10 @@ def mint(G, start, y):
                     Q[(w, k[1]+1)] = new_d   
                     P[(w, k[1]+1)] = P[k] + [k] 
                     
-        if not success: 
-            logging.warning('Algorithm terminated before last frame was reached.')  # debugging only 
-        
+    
+    if not success: 
+        logging.warning('Algorithm terminated before last frame was reached.')  # debugging only 
+    
     return d , P[k] + [k]
 
 
@@ -258,7 +259,7 @@ def bidirectional_mint(G, start, y, last_nodes):
 
 
 
-def bidirectional_tech_bound(G, start, y, last_nodes):
+def bidirectional_mint_bound(G, start, y, last_nodes):
    '''
    bidirectional-mint-bound
    Parameters: 
