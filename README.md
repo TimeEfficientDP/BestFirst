@@ -5,3 +5,5 @@ Implementation of the algorithms:
  * Tech (HistogramConstruction) for efficient histogram construction. 
 
 The algorithms are based on the ISABELLA framework. 
+
+Scripts and datasets are also provided. 
