@@ -40,15 +40,15 @@ if __name__ == '__main__':
                      print("Starting Vanilla V-Opt Histogram .. \n ") 
                      final_error = V_optimal_histogram(sequence, B) 
                      
-                     print("Starting Dijkstra Histogram .. \n ") 
+                     print("Starting Tech Histogram .. \n ") 
                      final_error_dijkstra = tech(sequence, B)
                      
-                     print("Starting Bound Dijkstra Histogram .. \n " ) 
+                     print("Starting Tech Bound Histogram .. \n " ) 
                      final_error_dijkstra_bound = tech_bound(sequence, B, LB)
                      
-                     print("Starting Bidirectional Dijkstra Histogram .. \n")
+                     print("Starting Bidirectional Tech Histogram .. \n")
                      final_error_bidirectional_dijkstra = bidirectional_tech(sequence, B) 
                      
-                     print("Starting Bidirectional-Bound Dijkstra Histogram  .. \n")
+                     print("Starting Bidirectional-Bound Tech Histogram  .. \n")
                      final_error_bidirectional_dijkstra_bound = bidirectional_tech_bound(sequence, B, UB, UB_reversed) 
                   

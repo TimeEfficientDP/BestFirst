@@ -1,7 +1,7 @@
 '''
-this script provides a minimal example comparing mint and Viterbi in synthetic ER data 
+this script provides a minimal example comparing mint and Viterbi in synthetic ER data and testing
+the correctness of MINT 
 '''
-
 import numpy as np 
 import random
 from bestFirstViterbi import mint, viterbi, viterbi_tp, mint_bound, bidirectional_mint, bidirectional_mint_bound
