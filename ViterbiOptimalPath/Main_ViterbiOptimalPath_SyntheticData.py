@@ -88,10 +88,11 @@ if __name__ == '__main__':
                      D, P = mint_bound(G, 0, y)
                       
                      print("Starting Bi-directional Mint .. \n ") 
-                     P , optimal_cost = bidirectional_mint(G, 0, y, last_nodes=[P_Viterbi[-1]]) # here for simplicity we assume last node is known 
+                     last_nodes = G.find_T_reachability_set(0,T)
+                     P , optimal_cost = bidirectional_mint(G, 0, y, list(last_nodes)) # here for simplicity we assume last node is known 
                 
                      print("Starting Bi-directional Mint Bound .. \n ") 
-                     P_Dij_bidi_bound , optimal_cost = bidirectional_mint_bound(G, 0, y, last_nodes=[P_Viterbi[-1]]) # here for simplicity we assume last node is known 
+                     P_Dij_bidi_bound , optimal_cost = bidirectional_mint_bound(G, 0, y, list(last_nodes)) # here for simplicity we assume last node is known 
                    
                  
     

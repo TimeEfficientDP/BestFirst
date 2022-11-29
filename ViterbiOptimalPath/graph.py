@@ -379,7 +379,6 @@ class Graph:
                    new_neighbours.add(k) 
         
            current_set_of_neighbours = new_neighbours    
-           #print("current set of neighbours " + str(current_set_of_neighbours) +" iteration " + str(i+2))
        
        return current_set_of_neighbours
    
