@@ -7,3 +7,5 @@ Implementation of the algorithms:
 The algorithms are based on the ISABELLA framework. 
 
 Scripts and datasets are also provided. 
+
+For more information, please contact martino.ciaperoni@aalto.fi
