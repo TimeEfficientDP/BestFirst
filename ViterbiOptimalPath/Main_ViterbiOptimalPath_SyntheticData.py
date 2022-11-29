@@ -5,7 +5,7 @@ this script provides a comparison between different algorithms for Optimal Viter
 
 import numpy as np 
 import random
-from bestFirstViterbi import mint, viterbi_tp, mint_bound, bidirectional_mint, bidirectional_mint_bound
+from BestFirstViterbi import mint, viterbi_tp, mint_bound, bidirectional_mint, bidirectional_mint_bound
 from graph import Graph
 
 def generate_ER(n_nodes: int, sd:int , prob:float): 

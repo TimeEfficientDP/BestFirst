@@ -17,13 +17,14 @@ More in detail, the structure of the repository is as follows:
 	- Histogram\_main\_synthetic\_data : script to run histogram construction experiments with synthetic data (by setting appropriate parameters)
 
 
--ViterbiOptimalPath
-	-bestFirstViterbi.py: different algorithm for Viterbi optimal path 
-	-BestFirstViterbi_Decoding.py: : different algorithm for Viterbi optimal path for decoding data 
-	-dataOptimalPath:  : containing data used for the expriments with Viterbi-based decoding
-	-Main\_ViterbiOptimalPath\_DecodingData.py: script to run decoding experiments with real data (by setting appropriate parameters)
-	-Main\_ViterbiOptimalPath\_SyntheticData.py : script to run optimal Viterbi path experiments with synthetic data (by setting appropriate parameters)
-	-graph.py: class used to represent transition graphs and their properties 
+
+- ViterbiOptimalPath
+	- bestFirstViterbi.py: different algorithm for Viterbi optimal path 
+	- BestFirstViterbi_Decoding.py: : different algorithm for Viterbi optimal path for decoding data 
+	- dataOptimalPath:  : containing data used for the expriments with Viterbi-based decoding
+	- Main\_ViterbiOptimalPath\_DecodingData.py: script to run decoding experiments with real data (by setting appropriate parameters)
+	- Main\_ViterbiOptimalPath\_SyntheticData.py : script to run optimal Viterbi path experiments with synthetic data (by setting appropriate parameters)
+	- graph.py: class used to represent transition graphs and their properties 
 		
 
 In addition we provide a simple script performing a basic test, checking the optimality of Mint.  
