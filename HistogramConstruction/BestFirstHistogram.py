@@ -1,6 +1,9 @@
 from pqdict import PQDict
 import numpy as np 
 from collections import defaultdict 
+from math import ceil , floor 
+import copy 
+
 
 def V_optimal_histogram(sequence, B: int):
     
@@ -308,3 +311,101 @@ def bidirectional_tech_bound(sequence, B, LB, LB_reversed):
             break 
     
     return mu
+
+
+
+def splitLeftElements(start, end, bins):
+    ''' helper subroutine used for bounds computation ''' 
+    return list(np.ceil(np.linspace(start=start, stop=end, num=bins + 1)).astype(np.int32))
+
+
+
+def compute_bounds(sequence, B): 
+    
+    ''' utility for the pre-computation of bounds to be used for priority computation '''
+    
+    n = len(sequence)
+    LB = np.zeros((n+1,B+1)) # in this case B is exactly the number of buckets not split 
+    UB = np.matrix(np.ones((n+1,B+1)) * np.inf)
+    sums = np.zeros(n)
+    squared_sums = np.zeros(n) 
+    sums[0] = sequence[0]
+    squared_sums[0]= sequence[0]**2 
+    
+    for i in range(1,n): 
+        sums[i] = sums[i-1] + sequence[i] 
+        squared_sums[i] = squared_sums[i-1] + sequence[i]**2
+    
+    for i in range(n-1): 
+      
+        left_elements = n - i #- 1
+                        
+        for k in range(1, B+1): 
+            
+            if k < left_elements: 
+            
+                bins = splitLeftElements(i, n, k)
+                                
+                all_sse = [] 
+                for h in range(len(bins)-1): 
+                    low_bin = max(0,  bins[h]-1)
+                    top_bin = bins[h+1]-1
+                    squared_error = (squared_sums[top_bin] - squared_sums[low_bin]) - (sums[top_bin] - sums[low_bin])**2  / (top_bin - low_bin + 1)
+                    all_sse.append(squared_error) 
+        
+                
+                LB[i,k] = min(all_sse) 
+                UB[i,k] = sum(all_sse)
+                
+            
+    return LB , UB
+
+
+def compute_bounds_reversed(sequence, B): 
+    
+    
+    '''´ utility for the pre-computation of bounds to be used for priority computation
+    in the backward search'''
+    
+    
+    n = len(sequence)
+    LB = np.zeros((n+1,B+1)) # in this case B is exactly the number of buckets not split 
+    UB = np.matrix(np.ones((n+1,B+1)) * np.inf)
+    sums = np.zeros(n)
+    squared_sums = np.zeros(n) 
+    sums[0] = sequence[0]
+    squared_sums[0]= sequence[0]**2 
+    
+    for i in range(1,n): 
+        sums[i] = sums[i-1] + sequence[i] 
+        squared_sums[i] = squared_sums[i-1] + sequence[i]**2
+    
+    for i in range(n): 
+           
+        elements_to_split = i 
+                        
+        for k in range(1, B+1): 
+
+            if k < elements_to_split: 
+            
+                bins = splitLeftElements(0, i, k)
+                
+                all_sse = [] 
+                for h in range(len(bins)-1): 
+                    low_bin = max(0,  bins[h])
+                    top_bin = bins[h+1]
+                    squared_error = (squared_sums[top_bin] - squared_sums[low_bin]) - (sums[top_bin] - sums[low_bin])**2  / (top_bin - low_bin + 1)
+                    all_sse.append(squared_error) 
+      
+                   
+                LB[i,k] = min(all_sse) 
+                UB[i,k] = sum(all_sse)
+                
+            
+    return LB , UB
+
+
+
+
+
+
