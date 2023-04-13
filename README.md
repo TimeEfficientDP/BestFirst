@@ -30,7 +30,3 @@ More in detail, the structure of the repository is as follows:
 In addition we provide a simple script performing a basic test, checking the optimality of Mint.  
 
 Our implementation uses the PQDict module (see: https://pypi.org/project/pqdict/). 
-
-Note that the data used in the forced alignment shared cannot be shared in this repository due to their size. 
-However, they can be provided upon request. 
-For such data and related code as well as for further information, please contact martino.ciaperoni@aalto.fi.
