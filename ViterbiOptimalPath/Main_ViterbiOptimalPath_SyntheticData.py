@@ -32,6 +32,32 @@ def generate_ER(n_nodes: int, sd:int , prob:float):
     return all_nodes, all_edges
 
 
+def create_G_by_paths(n_nodes: int, sd:int, T:int, n_paths: int, power_a: float): 
+    ''' generate synthetic data with skewed transition probabilities ''' 
+    #
+    np.random.seed(sd) 
+    all_nodes = [x for x in range(n_nodes)]
+    all_edges = []
+    #
+    # draw path probabilities 
+    path_probabilities = np.random.power(power_a, size=n_paths) * 10000
+    #
+    for path in range(n_paths): 
+        #
+        # generate one path of lenght T 
+        path_nodes = [0] + random.choices(all_nodes, k=T-1)
+        #
+        this_path_probability = path_probabilities[path] 
+        #
+        probability_per_edge = - this_path_probability / (T-1) 
+        #
+        for i in range(len(path_nodes)-1): 
+            all_edges.append( ( path_nodes[i], path_nodes[i+1], probability_per_edge) )
+        #
+        #
+        #
+    return all_nodes, all_edges
+
 
 def create_B(n_observables = 50, n_states = 100, sd = 1, lb = 0.001, ub = 10): 
     
@@ -71,7 +97,8 @@ if __name__ == '__main__':
                      # vector of observations
                      y = [random.randint(0,n_observables-1) for _ in range(T)] 
                      # generate simple data 
-                     all_nodes, all_edges = generate_ER(n_nodes = K, sd=1, prob = density)                    
+                     all_nodes, all_edges = generate_ER(n_nodes = K, sd=1, prob = density) 
+                     #all_nodes, all_edges = create_G_by_paths(n_nodes = K , sd = 1 , T = T , n_paths = 100, power_a = 1) use this in order to generate data with skewed path likelihoods
                      G = make_graph(all_nodes, all_edges)
                      B = create_B(n_observables = n_observables, n_states = K, sd = 1, lb = 0.001, ub = 1000)
                      G.emission_probabilities = B 
