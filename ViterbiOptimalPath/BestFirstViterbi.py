@@ -550,3 +550,222 @@ def BFS_descendants(G, source,  b):
                         visited.add(state_idx)
                       
         return visited 
+
+
+def bidirectional_mint_dfs(G, last_nodes, all_nodes, start, frames, space_budget_global, y,
+                                   final_state = None, start_frame = None, last_frame = None,
+                                   n_frames = None,  middle_pairs = [] ):
+    
+    '''
+    mint-dfs 
+    Parameters: 
+        G: transition graph (graph object) 
+        all_nodes: graph nodes (list) 
+        start: start state (int)
+        space_budget_global: space budget (float)
+        y: vector of observations (list) 
+        final_state: if available, last state (int) 
+        start_frame: start frame (int) 
+        last_frame: last frame (int) 
+        middle_pairs: current middle pairs (list) 
+        
+            
+    Returns 
+    middle_pairs: final middle pairs (list)
+    '''    
+    # init 
+    T = len(frames) 
+    th = ceil((frames[0] + frames[-1])/2)   
+    
+    if start_frame == None: 
+        start_frame = 0
+    
+    if last_frame == None:
+        last_frame = T-1 
+                
+    if final_state == None:
+        final_state = last_nodes[0] 
+     
+    D_f = defaultdict(float) 
+    D_b = defaultdict(float)     
+    D_f[(start, start_frame)] = (- G.emission_probabilities[ start ][ y[start_frame] ] ,(-1,-1), -1 ) # mapping of nodes to their dist from start
+    stored_tokens_f = set() 
+    stored_tokens_b = set() 
+    stored_tokens_f.add((start,start_frame))
+    
+    current_med = None
+    for node in last_nodes:
+        D_b[(node, last_frame)] = (0,  (-1,-1), -1 ) #(- G.emission_probabilities[ node ][ y[-1] ] , (-1,-1), -1)    # counting from 0 
+        stored_tokens_b.add((node, last_frame))
+    
+    Q_f = PQDict(D_f)  # priority queue for tracking min shortest path
+    Q_b = PQDict(D_b)
+    visited_f = set()  # unexplored node
+    visited_b = set() 
+    
+    mu = float("inf") 
+    while len(Q_f)>0 and len(Q_b)>0:     
+        (k_f, d_f) = Q_f.popitem() 
+        d_f, med_pair_f,  pred_f  = d_f #unpack distance and optimal predecessor 
+        stored_tokens_f.remove(k_f)
+        (k_b, d_b) = Q_b.popitem()      
+        d_b, med_pair_b, pred_b  = d_b #unpa
+        stored_tokens_b.remove(k_b)
+    
+        if k_f[1]==th: 
+            med_pair_f = (pred_f, k_f[0]) 
+        if k_b[1]==th-1: 
+            med_pair_b = (k_b[0], pred_b) 
+            
+        D_f[k_f] = (d_f , med_pair_f)
+        D_b[k_b] = (d_b , med_pair_b)  
+        # update explored 
+        visited_f.add(k_f)
+        visited_b.add(k_b)  
+        
+        if k_f[1] < last_frame: 
+            for w in G.adj[k_f[0]]:  # successors to v                  
+                if ( w , k_f[1]+1 ) not in visited_f and w in all_nodes:        
+                    d = D_f[k_f][0] - G.adj[k_f[0]][w]  - G.emission_probabilities[ w ][ y[k_f[1]+1] ]      
+                    tmp = Q_f.get((w,k_f[1]+1), (float("inf"), (-1,-1), -1))[0]
+                    if d < tmp:
+                        if len(stored_tokens_f) + len(stored_tokens_b) > space_budget_global and (w, k_f[1]+1) not in stored_tokens_f: 
+                            # running dfs forward 
+                            Q_f, stored_tokens_f, current_med, mu = dfs_forward(G, all_nodes, k_f[0], w, k_f[1]+1, d, med_pair_f, Q_f, D_f, Q_b, D_b, mu,  stored_tokens_f, y, set(), visited_b, space_budget_global, last_frame, th, current_med)                          
+                        else:
+                            # update queue 
+                            Q_f[(w, k_f[1]+1)] = (d, med_pair_f, k_f[0]) 
+                            stored_tokens_f.add((w, k_f[1]+1))
+                        
+                if ( w , k_f[1]+1 ) in visited_b and D_f[k_f][0] - G.adj[k_f[0]][w]  + D_b[( w , k_f[1]+1 )][0] - G.emission_probabilities[ w ][ y[k_f[1]+1] ]  < mu:
+                    mu = D_f[k_f][0] - G.adj[k_f[0]][w]  + D_b[( w , k_f[1]+1 )][0] - G.emission_probabilities[ w ][ y[k_f[1]+1] ] 
+                    if k_f[1]+1 == th: 
+                        current_med = (k_f[0], w)
+                    elif k_f[1]+1 > th: 
+                        current_med = D_f[k_f][1] 
+                    else:
+                        current_med = D_b[( w , k_f[1]+1 )][1] 
+                        
+        if k_b[1] > start_frame: 
+            for w in G.adj_inv[k_b[0]]:  # successors to v
+                if ( w , k_b[1] - 1 ) not in visited_b and w in all_nodes: 
+                    d = D_b[k_b][0] - G.adj_inv[k_b[0]][w]  - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ]     # dgs: dist of start -> v -> w
+                    tmp = Q_b.get((w,k_b[1]-1), (float("inf"), (-1,-1), 1))[0]
+                    if d < tmp:
+                        if len(stored_tokens_f) + len(stored_tokens_b) > space_budget_global and (w, k_b[1]-1) not in stored_tokens_b: 
+                            # running dfs backwards
+                            Q_b, stored_tokens_b, current_med, mu = dfs_backward(G, all_nodes, k_b[0], w, k_b[1]-1, d_b, med_pair_b, Q_b, D_b, Q_f, D_f, mu, stored_tokens_b, y, set(), visited_f, space_budget_global, start_frame, th, current_med)  
+                        else:
+                            #update queue 
+                            Q_b[(w, k_b[1]-1)] = (d, med_pair_b, k_b[0]) 
+                            stored_tokens_b.add((w, k_b[1]-1))
+                                       
+                if ( w, k_b[1]-1 ) in visited_f and D_b[k_b][0] - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] - G.adj_inv[k_b[0]][w]  + D_f[(w, k_b[1]-1)][0] < mu:                    
+                    mu = D_b[k_b][0] - G.emission_probabilities[ k_b[0] ][ y[k_b[1]] ] - G.adj_inv[k_b[0]][w]  + D_f[(w, k_b[1]-1)][0] 
+                    if k_b[1] == th: 
+                        current_med = (w, k_b[0])
+                    elif k_b[1] < th:  
+                        current_med = D_b[k_b][1] 
+                    else:
+                        current_med = D_f[( w, k_b[1]-1 )][1] 
+                                     
+        # check condition 
+        if D_f[k_f][0] + D_b[k_b][0] >= mu or (len(Q_f) == 0 or len(Q_b) == 0): #and k_f[1] >= max_t_forw and k_b[1] <= max_t_back:
+            x_a, x_b =  current_med 
+            N_left = floor(len(frames)/2)
+            # continuing recursion in ancestors 
+            if N_left > 1: 
+                left_frames = frames[:N_left]
+                start_frame = left_frames[0]
+                last_frame = left_frames[-1]
+                ancestors = BFS_ancestors(G, x_a,  N_left)
+                bidirectional_mint_dfs(G=G, last_nodes=[x_a], all_nodes = ancestors.union({x_a}), start=start, frames=left_frames, space_budget_global=space_budget_global, y=y, final_state = x_a, start_frame = start_frame, last_frame = last_frame, n_frames = N_left,  middle_pairs = middle_pairs)            
+            
+            middle_pairs.append((x_a, x_b)) 
+            N_right = len(frames) - N_left
+            # continuing recursion in descendants  
+            if N_right >1:
+                right_frames = frames[-N_right:]
+                start_frame_right = right_frames[0]
+                last_frame_right = right_frames[-1]
+                descendants = BFS_descendants(G, x_b,  N_right)
+                bidirectional_mint_dfs(G=G, last_nodes=last_nodes, all_nodes=descendants.union({x_b}), start = x_b, frames=right_frames, space_budget_global=space_budget_global, y=y, final_state = final_state, start_frame =   start_frame_right , last_frame = last_frame_right , n_frames = N_right, middle_pairs = middle_pairs)
+            break
+            
+    return middle_pairs
+
+
+def dfs_forward(G, all_nodes, pred, state, frame, dcost, med_pair, Q,D_f, Q_b, D_b, mu, stored_tokens, y, visited_dfs, visited_b, space_budget_global, last_frame, th, current_med): 
+    ''' function invoked by mint_dfs to perform dfs for the forward search'''
+    if frame==th: 
+        med_pair = (pred, state) 
+    
+    if frame < last_frame: 
+        for w in G.adj[state]:                          # successors to v
+            if w in all_nodes:
+                d = dcost - G.adj[state][w]  - G.emission_probabilities[ w ][ y[frame+1] ]      # dgs: dist of start -> v -> w
+                if ( w , frame+1 ) in visited_b:
+                    if dcost - G.adj[state][w]  + D_b[( w , frame+1 )][0]  - G.emission_probabilities[ w ][ y[frame+1] ]   < mu: 
+                        mu = dcost - G.adj[state][w]  + D_b[( w , frame+1 )][0]  - G.emission_probabilities[ w ][ y[frame+1] ] 
+                        if frame+1 == th: 
+                            current_med = (state, w)
+                        elif frame+1 > th: 
+                            current_med = med_pair 
+                        else:
+                            current_med = D_b[( w , frame+1 )][1] 
+                            
+                if (w, frame+1) in stored_tokens: 
+                    tmp = Q.get((w,frame+1), (float("inf"), (-1,-1), 1))[0]
+                    if d < tmp:
+                        Q[(w, frame+1)] = (d, med_pair, state) 
+                        stored_tokens.add(  (w, frame+1)   ) 
+                else:
+                    Q_f, stored_tokens_f, current_med, mu = dfs_forward(G, all_nodes, state, w, frame+1, d, med_pair, Q, D_f, Q_b, D_b, mu, stored_tokens, y, visited_dfs, visited_b, space_budget_global, last_frame, th, current_med)  
+    else: 
+        tmp =  Q.get((state,frame), (float("inf"), (-1,-1), -1 ))[0]
+        if dcost < tmp: 
+            stored_tokens.add(  (state,frame)    ) 
+            Q[(state,frame)] = (dcost, med_pair, pred) 
+                                                     
+    return Q, stored_tokens  , current_med , mu
+                       
+
+def dfs_backward(G, all_nodes, pred, state, frame, dcost, med_pair, Q ,D_b, Q_f, D_f, mu, stored_tokens, y, visited_dfs, visited_f, space_budget_global, start_frame, th, current_med): 
+    ''' function invoked by mint_dfs to perform dfs for the backward search'''
+    if frame==th-1: 
+        med_pair = (state, pred) 
+    
+    if frame >start_frame: 
+        
+        for w in G.adj_inv[state]:       
+            if w in all_nodes:
+                # successors to v
+                d = dcost - G.adj_inv[state][w]  - G.emission_probabilities[ state ][ y[frame] ] 
+                
+                if ( w , frame-1 ) in visited_f:
+                    if dcost - G.emission_probabilities[ state ][ y[frame] ] - G.adj_inv[state][w]  + D_f[( w , frame-1 )][0] < mu: 
+                        mu = dcost - G.emission_probabilities[ state ][ y[frame] ] - G.adj_inv[state][w]  + D_f[( w , frame-1 )][0]
+                        if frame == th: 
+                            current_med = (w, state)
+                        elif frame < th:  
+                            current_med = med_pair  
+                        else:
+                            current_med = D_f[( w, frame-1 )][1] 
+
+                if (w, frame-1) in stored_tokens: 
+                        tmp = Q.get((w,frame-1), (float("inf"), (-1,-1), 1))[0]
+                        if d < tmp:
+                            Q[(w, frame-1)] = (d, med_pair, state) 
+                            stored_tokens.add(  (w, frame-1)   ) 
+                                               
+                else:
+                    Q_b, stored_tokens_b, current_med, mu = dfs_backward(G, all_nodes, state, w, frame-1, d, med_pair, Q, D_b, Q_f, D_f, mu, stored_tokens, y, visited_dfs, visited_f, space_budget_global, start_frame, th, current_med)  
+                     
+    else: 
+        tmp =  Q.get((state,frame), (float("inf"),  (-1,-1), -1))[0]
+        if dcost < tmp: 
+            Q[(state,frame)] = (dcost, med_pair, pred) 
+            stored_tokens.add(  (state,frame)    ) 
+                                    
+    return Q, stored_tokens  , current_med , mu
+                       
