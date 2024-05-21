@@ -405,7 +405,117 @@ def compute_bounds_reversed(sequence, B):
     return LB , UB
 
 
+### TECH-DFS """ 
+def tech_dfs(sequence, B, UB, start, end, sums, squared_sums, global_budget, median_pairs):
+    ''' 
+    tech-dfs 
+    Parameters: 
+        sequence: data (list) 
+        B: number of buckets (int)
+        UB: bounds (array) 
+        start: start element (int) 
+        end: end element (int) 
+        sums: sum of elements used to compute the sum of squared errors for each bucket 
+        squared_sums: squared sum of elements used to compute the sum of squared errors for each bucket 
+        global_budget: memory budget such that when exceeded DFS is invoked (float)
+        median_pairs: current median pairs, initially empty (list)
+         
+    Returns: 
+        median_pairs: final median pairs
+    ''' 
+    
+    # threshold on frames 
+    th =  ceil((start + end)/2)  
+        
+    stored_tokens = set() 
+    D = defaultdict(dict) 
+    D[(start, 0)] = (0, ((-1, -1), -1), start) 
+    stored_tokens.add((start,0))
+    Q = PQDict(D)    
+    visited = set() 
+    
+    # initialize first bucket 
+    for j in range(start+1, end+1-(B)+1): 
+        squared_error = (squared_sums[j] -   squared_sums[start]) - (sums[j]  - sums[start] )**2 / (j - start + 1)
+        if squared_error > UB[start,B-1]: 
+            break
+        Q[(j,0)] = (squared_error, ((-1, -1),-1), start)   
+        stored_tokens.add((j,0))
+        
+    # main loop 
+    while Q: 
+        (key, d_and_med_pred) = Q.popitem() 
+        d = d_and_med_pred[0] 
+        med = d_and_med_pred[1] 
+        pred = d_and_med_pred[2]
+        D[key]= d
+        visited.add(key)  
+        #
+        stored_tokens.remove(key)
+     
+        if pred < th and key[0] >= th: 
+            med = ((pred, key[0]) , key[1]) 
+            
+        if key[0] == end and key[1] == B: 
+         
+            N_left = med[1]  - 1 
+            
+            if N_left > 0: 
+                tech_dfs(sequence=sequence, B=N_left, UB=UB, start = start, end = med[0][0], sums = sums, squared_sums = squared_sums, global_budget=global_budget,median_pairs=median_pairs)
+            
+            median_pairs.append(med)
+
+            N_right = B - med[1]
+           
+            if N_right >0: 
+                tech_dfs(sequence=sequence, B=N_right, UB=UB,  start = med[0][1], end = end, sums = sums, squared_sums = squared_sums, global_budget=global_budget,median_pairs=median_pairs)
+            break        
+
+        if key[1] < B:
+            for neig in range(key[0]+1, end+1-(B-key[1])+1): 
+                if (neig,key[1]+1) not in visited:
+                    squared_error = (squared_sums[neig] - squared_sums[key[0]]) - (sums[neig] - sums[key[0]])**2  / (neig - key[0]  + 1)
+                    if squared_error > UB[ key[0], B - 1 - key[1] ]: 
+                        break 
+                    new_d = d + squared_error 
+                    if new_d < Q.get((neig,key[1]+1), (float("inf"), ((-1, -1) ,-1 ), -1))[0]:
+                        
+                        if len(stored_tokens) > global_budget: 
+                            # entering dfs 
+                            Q, stored_tokens = dfs_histogram(pred=key[0], element=neig, nbuckets=key[1]+1, cost=new_d, med_pair=med, sequence=sequence, Q=Q, B=B, UB=UB, sums=sums, squared_sums=squared_sums, visited_dfs=set(), th=th, end=end, stored_tokens=stored_tokens,median_pairs=median_pairs)
+                        else:
+                            Q[(neig, key[1]+1)] = (new_d , med, key[0])
+                            stored_tokens.add((neig, key[1]+1)) # it is a set so if it was already there it does not count
+    return median_pairs
 
 
-
+def dfs_histogram(pred, element, nbuckets, cost, med_pair, sequence, Q, B, UB, sums, squared_sums, visited_dfs, th, end, stored_tokens): 
+    '''
+    function invoked by TECH-DFS to perform DFS 
+    '''
+    visited_dfs.add( (element, nbuckets, med_pair) )
+    
+    if pred < th and element >= th: 
+        med_pair = ((pred, element), nbuckets)
+    
+    if nbuckets < B: 
+        for neighbour in range(element+1, end+1-(B-nbuckets)+1): 
+            squared_error = (squared_sums[neighbour] - squared_sums[element]) - (sums[neighbour] - sums[element])**2  / (neighbour - element  + 1)
+            this_cost = cost + squared_error 
+            if (neighbour,nbuckets+1) in stored_tokens: 
+                    tmp = Q.get((neighbour,nbuckets+1),  (float("inf"), ((-1, -1) ,-1 ), -1))[0]
+                    if this_cost < tmp:
+                        Q[(neighbour,nbuckets+1)] = (this_cost ,  med_pair, element)
+            else:
+                if (neighbour, nbuckets+1, med_pair) not in visited_dfs:
+                    # continue dfs recursion 
+                    Q, stored_tokens  = dfs_histogram(pred=element, element=neighbour, nbuckets=nbuckets+1, cost=this_cost, med_pair=med_pair, sequence=sequence,  Q=Q, B=B, UB=UB, sums=sums, squared_sums=squared_sums, visited_dfs=visited_dfs, th=th, end=end, stored_tokens=stored_tokens) 
+    else: 
+        tmp =  Q.get((element,nbuckets),  (float("inf"), ((-1, -1) ,-1 ), -1))[0]
+                        
+        if cost < tmp: 
+            Q[(element,nbuckets)] = (cost, med_pair, pred)
+            stored_tokens.add( (element,nbuckets)  ) 
+                                                
+    return Q, stored_tokens   
 
