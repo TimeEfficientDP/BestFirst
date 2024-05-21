@@ -557,7 +557,7 @@ def bidirectional_mint_dfs(G, last_nodes, all_nodes, start, frames, space_budget
                                    n_frames = None,  middle_pairs = [] ):
     
     '''
-    mint-dfs 
+    bidrectional mint-dfs 
     Parameters: 
         G: transition graph (graph object) 
         all_nodes: graph nodes (list) 
