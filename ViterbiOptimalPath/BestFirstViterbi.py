@@ -436,6 +436,134 @@ def mint_dfs(G, all_nodes, start, frames, space_budget_global, y,
     return middle_pairs 
 
 
+
+def mint_efs(G, all_nodes, start, frames, space_budget_global, y,
+                                   final_state = None, start_frame = 0, last_frame = None,
+                                   n_frames = None,  middle_pairs = [],
+                                   multiplier=1
+                                   ):
+    
+    
+   '''
+    mint-efs 
+    Parameters: 
+        G: transition graph (graph object) 
+        all_nodes: graph nodes (list) 
+        start: start state (int)
+        space_budget_global: space budget (float)
+        y: vector of observations (list) 
+        final_state: if available, last state (int) 
+        start_frame: start frame (int) 
+        last_frame: last frame (int) 
+        middle_pairs: current middle pairs (list) 
+        multiplier: maximum number of frames stored in the priority queue (float)(
+        
+        
+            
+    Returns 
+    middle_pairs: final middle pairs (list)
+    '''
+
+    #initialization
+    T = len(frames) 
+    th = ceil((frames[0] + frames[-1])/2)   
+    D = defaultdict(float) 
+    
+    D[(start, start_frame) ] = ( -G.emission_probabilities[ start ][ y[ start_frame ] ] , -1, (-1,-1) )         # mapping of nodes to their dist from start
+    Q = PQDict(D)         
+
+    D_time = defaultdict(float) 
+    D_time[(start, start_frame) ] = (start_frame, ( -G.emission_probabilities[ start ][ y[ start_frame ] ] , -1, (-1,-1) ))         # mapping of nodes to their dist from start
+    Q_time = PQDict(D_time)  
+    
+    visited = set() 
+    stored_tokens = set() 
+    stored_tokens.add( (start, start_frame) ) 
+        
+    if last_frame == None:
+        last_frame = T-1 
+                
+    if n_frames == None:
+        n_frames = T
+
+    max_frame = 0 
+
+    while Q:             
+                
+        if not EFS: # visiting the next token according to BeFS
+            (k, val) = Q.popitem()   
+            d, pred , med_pair = val
+            stored_tokens.remove(k)
+            D[k]=d               
+            visited.add(k)       
+            del Q_time[k] 
+
+        else: # visiting the next token according to EFS
+            (k, val) = Q_time.popitem()   
+            d, pred , med_pair = val[1] 
+            min_frame = val[0]  
+            del Q[k]  
+            stored_tokens.remove(k)
+            D[k]=d             
+            visited.add(k)   
+
+        if k[1]==th: #updating middle pair 
+            if med_pair == (-1,-1): 
+                med_pair = (pred, k[0]) 
+        
+        if ((k[1] == last_frame and final_state is None) or (k[0] == final_state and k[1] == last_frame)):  # continuing the SIEVE recursion 
+            x_a, x_b =  med_pair 
+            middle_pairs.append(med_pair)
+            N_left = floor(len(frames)/2)      
+            
+            if N_left >1 : 
+                left_frames = frames[:N_left]
+                start_frame = left_frames[0]
+                last_frame = left_frames[-1]
+                ancestors = BFS_ancestors2(G, x_a,  N_left)
+                mint_efs(G, ancestors.union({x_a}), start, left_frames, space_budget_global, y, final_state = x_a, start_frame = start_frame, last_frame = last_frame, n_frames = N_left,  middle_pairs = middle_pairs,  multiplier=multiplier)
+            
+            middle_pairs.append((x_a, x_b)) 
+            N_right = len(frames) - N_left
+            
+            if N_right >1: 
+                right_frames = frames[-N_right:]
+                start_frame_right = right_frames[0]
+                last_frame_right = right_frames[-1]
+                descendants = BFS_descendants2(G, x_b,  N_right)
+                mint_efs(G, descendants.union({x_b}), x_b, right_frames, space_budget_global, y, final_state = final_state, start_frame =   start_frame_right , last_frame = last_frame_right , n_frames = N_right,  middle_pairs = middle_pairs,  multiplier=multiplier)
+            break
+
+        for w in G.adj[k[0]]:                        
+            if k[1]+1 > last_frame: 
+                break 
+            
+            if ( w , k[1]+1 ) not in visited and w in all_nodes:        
+                d = D[k] - G.adj[k[0]][w]  - G.emission_probabilities[ w ][ y[k[1]+1] ]      # dgs: dist of start -> v -> w
+                tmp = Q.get( (w,k[1]+1), (float("inf") , -1, (-1,1))   )[0]
+                
+                if d < tmp:
+                    Q[(w, k[1]+1)] = (d, k[0], med_pair)   
+                    Q_time[(w, k[1]+1)] = (k[1]+1, (d, k[0], med_pair))
+                    stored_tokens.add( (w, k[1]+1) )
+                    if k[1] + 1 > max_frame: #updating running maximum frame in the queue 
+                        max_frame = k[1] + 1
+                    
+        min_frame = Q_time.top()[1] # access running minimum frame in queue without popping it 
+        # toggle between EFS and BeFS according to space budget 
+        if not EFS: 
+            if  len(stored_tokens) > space_budget_global:
+                EFS=True # activate EFS 
+                
+        else: 
+            if ( (max_frame - min_frame) <= multiplier) or (len(stored_tokens) <= space_budget_global): 
+                EFS = False #deactivate EFS
+
+    return middle_pairs
+
+
+
+
 def dfs( G, all_nodes, pred, state, frame, cost, med_pair, Q, stored_tokens,  y, visited_dfs, space_budget, n_frames, tot_tokens, th): 
                     
     ''' function invoked by mint_dfs to perform dfs '''
